@@ -83,6 +83,13 @@ export const PROJECTS: Project[] = [
     description: 'Building a scalable, multi-app food ordering platform with location-based restaurant discovery, real-time order management, and centralized store administration.',
     techStack: ['React', 'TypeScript', 'Node.js', 'Web'],
     link: '#'
+  },
+  {
+    id: '6',
+    name: 'Log My Work',
+    description: 'Log your daily work. Generate client-ready timesheets.',
+    techStack: ['React', 'TypeScript', 'Node.js', 'Web'],
+    link: 'https://logmywork.codesh.in/'
   }
 ];
 
