@@ -50,6 +50,13 @@ export const ROADMAP: RoadmapItem[] = [
 
 export const PROJECTS: Project[] = [
   {
+    id: '7',
+    name: 'Society Maintenance Ledger - Maintainly',
+    description: 'Transparent maintenance ledger without Excel chaos. Generate your society link in seconds and share it with residents.',
+    techStack: ['React', 'TypeScript', 'Node.js', 'Web'],
+    link: 'https://www.maintainly.online/'
+  },
+  {
     id: '1',
     name: 'Vani Voice Asistance',
     description: 'Vani is a Voice Assistant App Which Allows you to Manage your Incoming Calls Just by your Voice. Easy and Simple to Use Just Use your Voice to Set Commands',
