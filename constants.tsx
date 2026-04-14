@@ -50,6 +50,13 @@ export const ROADMAP: RoadmapItem[] = [
 
 export const PROJECTS: Project[] = [
   {
+    id: '8',
+    name: 'Do Not Touch Purple',
+    description: 'Play game test you focus, Just dont touch on Purple',
+    techStack: ['html'],
+    link: 'https://donttouchpurple.online/'
+  },
+  {
     id: '7',
     name: 'Society Maintenance Ledger - Maintainly',
     description: 'Transparent maintenance ledger without Excel chaos. Generate your society link in seconds and share it with residents.',
