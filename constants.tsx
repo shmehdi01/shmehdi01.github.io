@@ -110,14 +110,17 @@ export const PROJECTS: Project[] = [
 export const SERVICES: Service[] = [
   {
     title: 'Mobile App Development',
-    description: 'End-to-end production-ready mobile applications using Native Android (Kotlin) and Flutter. Expert development based in Noida.'
+    description: 'End-to-end production-ready mobile applications using Native Android (Kotlin) and Flutter. Expert development based in Noida.',
+    href: '/services/mobile-app-development',
   },
   {
     title: 'System Architecture',
-    description: 'Designing low-level design (LLD) documents and modular architectures that scale with user growth.'
+    description: 'Designing low-level design (LLD) documents and modular architectures that scale with user growth.',
+    href: '/services/system-architecture',
   },
   {
     title: 'Web Engineering',
-    description: 'Full-stack web applications using React, TypeScript, and high-performance Node.js backends.'
+    description: 'Full-stack web applications using React, TypeScript, and high-performance Node.js backends.',
+    href: '/services/web-app-development',
   }
 ];

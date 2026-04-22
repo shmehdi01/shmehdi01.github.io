@@ -1,134 +1,283 @@
+import React, { useEffect, useState } from 'react';
+import HomeContent from './components/HomeContent';
+import MobileAppDevelopmentPage from './components/MobileAppDevelopmentPage';
+import SystemArchitecturePage from './components/SystemArchitecturePage';
+import WebEngineeringPage from './components/WebEngineeringPage';
+import ServicePage from './components/ServicePage';
+import SiteShell from './components/SiteShell';
 
-import React, { useState, useEffect } from 'react';
-import Hero from './components/Hero';
-import Roadmap from './components/Roadmap';
-import Portfolio from './components/Portfolio';
-import Services from './components/Services';
-import Contact from './components/Contact';
+const SERVICE_PAGES: Record<string, { title: string; paragraphs: string[] }> = {
+  '/services/mobile-app-development': {
+    title: 'Mobile App Development Services',
+    paragraphs: [],
+  },
+  '/services/system-architecture': {
+    title: 'System Architecture & LLD Design',
+    paragraphs: [],
+  },
+  '/services/flutter-app-development': {
+    title: 'Flutter App Developer in Noida, India',
+    paragraphs: [
+      'CodeSH Lab builds Flutter applications for startups and growing businesses that need a production-ready launch without the overhead of a large agency.',
+      'I focus on clean architecture, maintainable code, and responsive user experiences so the app can move from MVP to real customer usage with less rework.',
+      'If you need a Flutter build that is fast, dependable, and easy to extend, I can help shape the product and ship it end to end.',
+    ],
+  },
+  '/services/web-app-development': {
+    title: 'Web Engineering Services',
+    paragraphs: [],
+  },
+  '/services/ui-ux-design': {
+    title: 'UI/UX Design Services — Clean, Modern, Conversion-Focused',
+    paragraphs: [
+      'Good product design should reduce friction, clarify the offer, and make the next step obvious. That is the kind of UI/UX work I prefer to deliver.',
+      'I work on clear information hierarchy, conversion-minded layouts, and interfaces that feel modern without becoming decorative noise.',
+      'If you need design support before development or want to tighten an existing product, CodeSH Lab can help turn the idea into a cleaner experience.',
+    ],
+  },
+};
+
+const ROUTE_META: Record<string, { title: string; description: string; url: string }> = {
+  '/': {
+    title: 'Flutter & Web App Developer Noida | CodeSH Lab',
+    description:
+      'CodeSH Lab builds production-ready Flutter apps, web apps & UI/UX for startups. Based in Noida, India. Fast delivery, clean architecture. Get a free quote.',
+    url: 'https://www.codesh.in/',
+  },
+  '/services': {
+    title: 'Services | CodeSH Lab',
+    description:
+      'Flutter, Android, web app development, and UI/UX design services from CodeSH Lab in Noida, India.',
+    url: 'https://www.codesh.in/services',
+  },
+  '/services/mobile-app-development': {
+    title: 'Mobile App Development Services | CodeSH Lab',
+    description:
+      'Production-ready mobile app development using Android (Kotlin) and Flutter. Performance-focused builds with clean architecture and scalable foundations.',
+    url: 'https://www.codesh.in/services/mobile-app-development',
+  },
+  '/services/system-architecture': {
+    title: 'System Architecture & LLD Design | CodeSH Lab',
+    description:
+      'Low-level design (LLD) and system architecture services for scalable products. Modular designs, performance strategies, and production-ready foundations.',
+    url: 'https://www.codesh.in/services/system-architecture',
+  },
+  '/services/flutter-app-development': {
+    title: 'Flutter App Developer in Noida, India | CodeSH Lab',
+    description:
+      'Production-ready Flutter app development for startups and businesses in Noida, India. Clean architecture, reliable delivery, and MVP-to-scale execution.',
+    url: 'https://www.codesh.in/services/flutter-app-development',
+  },
+  '/services/web-app-development': {
+    title: 'Web App Development for Startups - Noida | CodeSH Lab',
+    description:
+      'High-performance web engineering using React, TypeScript, and Node.js. Fast, secure, scalable web applications tailored to business goals.',
+    url: 'https://www.codesh.in/services/web-app-development',
+  },
+  '/services/ui-ux-design': {
+    title: 'UI/UX Design Services - CodeSH Lab',
+    description:
+      'Conversion-focused UI/UX design services for startups and growing businesses. Clear product flows, modern interfaces, and founder-led execution.',
+    url: 'https://www.codesh.in/services/ui-ux-design',
+  },
+};
+
+const isServicePath = (pathname: string) => pathname in SERVICE_PAGES;
+const isBreadcrumbPath = (pathname: string) => pathname !== '/';
+
+const getInitialPathname = () => {
+  const fallbackPath = new URLSearchParams(window.location.search).get('p');
+
+  if (fallbackPath && fallbackPath.startsWith('/')) {
+    return fallbackPath;
+  }
+
+  return window.location.pathname || '/';
+};
 
 const App: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [pathname, setPathname] = useState(getInitialPathname);
 
-  // Close menu when resizing to desktop
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMenuOpen(false);
-      }
+    const handlePopState = () => {
+      setPathname(window.location.pathname || '/');
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Prevent scrolling when menu is open
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+    const fallbackPath = new URLSearchParams(window.location.search).get('p');
+    if (fallbackPath && fallbackPath.startsWith('/')) {
+      window.history.replaceState({}, '', fallbackPath);
+      setPathname(fallbackPath);
     }
-  }, [isMenuOpen]);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    if (window.location.hash) {
+      const id = window.location.hash.replace('#', '');
+      document.getElementById(id)?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [pathname]);
 
-  const navItems = ['Journey', 'Portfolio', 'Services', 'Contact'];
+  useEffect(() => {
+    const meta = ROUTE_META[pathname] ?? ROUTE_META['/'];
+    const image = 'https://www.codesh.in/og-image.png';
+
+    document.title = meta.title;
+
+    const setMetaTag = (selector: string, attribute: 'name' | 'property', key: string, content: string) => {
+      let element = document.head.querySelector<HTMLMetaElement>(selector);
+
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attribute, key);
+        document.head.appendChild(element);
+      }
+
+      element.setAttribute('content', content);
+    };
+
+    const setCanonical = (href: string) => {
+      let element = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+
+      if (!element) {
+        element = document.createElement('link');
+        element.setAttribute('rel', 'canonical');
+        document.head.appendChild(element);
+      }
+
+      element.setAttribute('href', href);
+    };
+
+    setCanonical(meta.url);
+    setMetaTag('meta[name="description"]', 'name', 'description', meta.description);
+    setMetaTag('meta[name="robots"]', 'name', 'robots', 'index, follow');
+
+    setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'website');
+    setMetaTag('meta[property="og:locale"]', 'property', 'og:locale', 'en_IN');
+    setMetaTag('meta[property="og:url"]', 'property', 'og:url', meta.url);
+    setMetaTag('meta[property="og:title"]', 'property', 'og:title', meta.title);
+    setMetaTag('meta[property="og:description"]', 'property', 'og:description', meta.description);
+    setMetaTag('meta[property="og:image"]', 'property', 'og:image', image);
+
+    setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
+    setMetaTag('meta[name="twitter:url"]', 'name', 'twitter:url', meta.url);
+    setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', meta.title);
+    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', meta.description);
+    setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', image);
+  }, [pathname]);
+
+  useEffect(() => {
+    const existingBreadcrumb = document.getElementById('schema-breadcrumb');
+    if (existingBreadcrumb) {
+      existingBreadcrumb.remove();
+    }
+
+    if (!isBreadcrumbPath(pathname)) {
+      return;
+    }
+
+    const breadcrumbItems: Array<{ name: string; item: string }> = [
+      { name: 'Home', item: 'https://codesh.in' },
+      { name: 'Services', item: 'https://codesh.in/services' },
+    ];
+
+    if (pathname === '/services') {
+      // Services index page only needs Home -> Services.
+    } else if (pathname === '/services/mobile-app-development') {
+      breadcrumbItems.push({ name: 'Mobile App Development', item: 'https://codesh.in/services/mobile-app-development' });
+    } else if (pathname === '/services/system-architecture') {
+      breadcrumbItems.push({ name: 'System Architecture & LLD Design', item: 'https://codesh.in/services/system-architecture' });
+    } else if (pathname === '/services/flutter-app-development') {
+      breadcrumbItems.push({ name: 'Flutter App Development', item: 'https://codesh.in/services/flutter-app-development' });
+    } else if (pathname === '/services/web-app-development') {
+      breadcrumbItems.push({ name: 'Web Engineering', item: 'https://codesh.in/services/web-app-development' });
+    } else if (pathname === '/services/ui-ux-design') {
+      breadcrumbItems.push({ name: 'UI/UX Design', item: 'https://codesh.in/services/ui-ux-design' });
+    } else {
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'schema-breadcrumb';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbItems.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        item: item.item,
+      })),
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [pathname]);
+
+  const handleNavigate = (href: string) => {
+    if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      window.location.href = href;
+      return;
+    }
+
+    if (href.startsWith('#')) {
+      const hash = href.slice(1);
+      const element = document.getElementById(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      return;
+    }
+
+    if (href === pathname) {
+      return;
+    }
+
+    const [nextPathname, nextHash] = href.split('#');
+    window.history.pushState({}, '', href);
+    setPathname(nextPathname || '/');
+
+    if (nextHash) {
+      window.requestAnimationFrame(() => {
+        document.getElementById(nextHash)?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    }
+  };
+
+  const page = isServicePath(pathname) ? SERVICE_PAGES[pathname] : null;
 
   return (
-    <div className="min-h-screen grid-pattern selection:bg-zinc-800 selection:text-zinc-100">
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-[100] transition-colors duration-300 ${isMenuOpen ? 'bg-black' : 'glass border-b border-zinc-900/50'}`}>
-        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between relative z-[120]">
-          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-mono font-bold text-lg tracking-tighter hover:opacity-70 transition-opacity">
-            CODESH<span className="text-zinc-500">LAB</span>
-          </a>
-          
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-10">
-            {navItems.map((item) => (
-              <a 
-                key={item}
-                href={`#${item.toLowerCase()}`} 
-                className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 hover:text-zinc-100 transition-colors"
-              >
-                {item}
-              </a>
-            ))}
-          </div>
-
-          {/* Mobile Toggle Button */}
-          <button 
-            onClick={toggleMenu}
-            className="md:hidden text-zinc-400 hover:text-zinc-100 transition-colors p-2 -mr-2"
-            aria-label="Toggle Menu"
-          >
-            {isMenuOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="6" x2="20" y2="6"></line><line x1="4" y1="18" x2="20" y2="18"></line></svg>
-            )}
-          </button>
-        </div>
-
-        {/* Mobile Menu Overlay */}
-        <div 
-          className={`fixed inset-0 bg-black z-[110] md:hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="flex flex-col items-center justify-center min-h-screen pt-20 gap-8">
-            {navItems.map((item, idx) => (
-              <a 
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                onClick={() => setIsMenuOpen(false)}
-                className={`text-3xl font-mono uppercase tracking-[0.4em] text-zinc-500 hover:text-zinc-100 transition-all duration-500 transform py-4 ${
-                  isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                }`}
-                style={{ transitionDelay: `${idx * 100}ms` }}
-              >
-                {item}
-              </a>
-            ))}
-            
-            <div className={`mt-12 pt-12 border-t border-zinc-900 w-48 flex justify-center gap-6 transition-all duration-700 delay-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
-               <a href="https://github.com/shmehdi01" target="_blank" className="text-zinc-600 hover:text-zinc-100 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-               </a>
-               <a href="https://www.linkedin.com/in/shmehdi01/" target="_blank" className="text-zinc-600 hover:text-zinc-100 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-               </a>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-6">
-        <Hero />
-        <Roadmap />
-        <Portfolio />
-        <Services />
-        <Contact />
-      </main>
-
-      {/* Footer minimal info */}
-      <footer className="py-12 border-t border-zinc-900 bg-black/50">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
-             <p className="text-[11px] font-mono text-zinc-600 uppercase tracking-widest">
-              CodeSH Lab • Noida, Uttar Pradesh, India
-            </p>
-            <p className="text-[9px] font-mono text-zinc-700 uppercase tracking-[0.2em]">
-              Mobile & Web Engineering Specialist
-            </p>
-          </div>
-          <p className="text-[11px] font-mono text-zinc-600 uppercase tracking-widest">
-            Last updated Q1 2026
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
-};
+      <SiteShell currentPath={pathname} onNavigate={handleNavigate}>
+        {pathname === '/services/mobile-app-development' ? (
+          <MobileAppDevelopmentPage onNavigate={handleNavigate} />
+        ) : pathname === '/services/system-architecture' ? (
+          <SystemArchitecturePage onNavigate={handleNavigate} />
+        ) : pathname === '/services/web-app-development' ? (
+          <WebEngineeringPage onNavigate={handleNavigate} />
+        ) : page ? (
+          <ServicePage title={page.title} paragraphs={page.paragraphs} onNavigate={handleNavigate} />
+        ) : pathname === '/services' ? (
+          <ServicePage
+            title="Services for Startups and Growing Products"
+            paragraphs={[
+              'CodeSH Lab provides Flutter app development, Android development, web app development, and UI/UX design from Noida, India.',
+              'The focus is production-ready execution for startups and businesses that want a clear, founder-led delivery process.',
+              'Use the service pages to explore each offering or get in touch if you want help shaping the product roadmap.',
+            ]}
+            onNavigate={handleNavigate}
+          />
+        ) : (
+          <HomeContent onNavigate={handleNavigate} />
+        )}
+      </SiteShell>
+    );
+  };
 
 export default App;

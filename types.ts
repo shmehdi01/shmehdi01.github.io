@@ -19,4 +19,5 @@ export interface Service {
   title: string;
   description: string;
   note?: string;
+  href?: string;
 }
