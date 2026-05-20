@@ -1,5 +1,7 @@
 import React from 'react';
 import Hero from './Hero';
+import HowItWorks from './HowItWorks';
+import FAQ from './FAQ';
 import Roadmap from './Roadmap';
 import Portfolio from './Portfolio';
 import Services from './Services';
@@ -12,10 +14,12 @@ interface HomeContentProps {
 const HomeContent: React.FC<HomeContentProps> = ({ onNavigate }) => {
   return (
     <>
-      <Hero />
+      <Hero onNavigate={onNavigate} />
+      <HowItWorks onNavigate={onNavigate} />
       <Roadmap />
-      <Portfolio />
+      <Portfolio onNavigate={onNavigate} />
       <Services onNavigate={onNavigate} />
+      <FAQ onNavigate={onNavigate} />
       <Contact />
     </>
   );
