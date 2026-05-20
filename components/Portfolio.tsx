@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SectionHeading from './SectionHeading';
-import InternalLink from './InternalLink';
 
 interface ProjectData {
   name: string;
@@ -149,16 +148,12 @@ const Portfolio: React.FC<PortfolioProps> = ({ onNavigate }) => {
   const [inputVal, setInputVal] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [isLiveAPI, setIsLiveAPI] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialize welcome message
   useEffect(() => {
-    const isKeyConfigured = Boolean(import.meta.env.VITE_CLAUDE_API_KEY);
-    setIsLiveAPI(isKeyConfigured);
-
-    const welcomeText = "Hi! I'm Claude, Syed's interactive project explorer. Select a category pill above, use a starter question, or ask me anything directly about the products, stacks, or roles Syed has worked on.";
+    const welcomeText = "Hi! I'm your interactive project explorer. Select a category pill above, use a starter question, or ask me anything directly about the products, stacks, or roles Syed has worked on.";
     // Initially show featured projects in the welcome card
     const featuredProjects = PROJECTS_DATA.slice(0, 4);
 
@@ -179,7 +174,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ onNavigate }) => {
     }
   }, [messages]);
 
-  // Local simulated response generator if no API key is present
+  // Local simulated response generator
   const getSimulatedResponse = (query: string): { text: string; matchedProjects?: ProjectData[] } => {
     const q = query.toLowerCase();
 
@@ -335,7 +330,7 @@ const Portfolio: React.FC<PortfolioProps> = ({ onNavigate }) => {
     // 5. Greetings
     if (q.includes("hello") || q.includes("hi") || q.includes("hey") || q.includes("greetings")) {
       return {
-        text: "Hello! I am Claude. Ask me about any of Syed's projects, technical stacks, or architectural experience, and I will filter the appropriate entries for you."
+        text: "Hello! Ask me about any of Syed's projects, technical stacks, or architectural experience, and I will filter the appropriate entries for you."
       };
     }
 
@@ -344,60 +339,6 @@ const Portfolio: React.FC<PortfolioProps> = ({ onNavigate }) => {
       text: "I can help you filter through all of Syed's engineering builds. Here is the complete list of projects:",
       matchedProjects: PROJECTS_DATA
     };
-  };
-
-  // Perform Live API call to Claude
-  const askClaudeAPI = async (userMessage: string, chatHistory: Message[]): Promise<string> => {
-    const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
-    const apiEndpoint = import.meta.env.VITE_CLAUDE_API_URL || 'https://api.anthropic.com/v1/messages';
-
-    const systemPrompt = `You are Claude 3.5 Sonnet, representing Syed Hussain Mehdi's portfolio.
-Syed is the founder of CodeSH Lab and helps non-technical founders go from idea to working MVP in a week.
-Here is the official list of projects Syed has worked on:
-${JSON.stringify(PROJECTS_DATA, null, 2)}
-
-When the visitor asks about projects, answer directly, professionally, and in a friendly, founder-to-founder tone. 
-Always include Markdown links to the project site if they exist (e.g. [NauhaDiary](https://nauhadiary.com)).
-Be concise (maximum 3-4 sentences).`;
-
-    const apiMessages = chatHistory
-      .filter(m => m.text && m.id !== 'welcome')
-      .map(m => ({
-        role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
-        content: m.text
-      }));
-
-    apiMessages.push({
-      role: 'user',
-      content: userMessage
-    });
-
-    const response = await fetch(apiEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'dangerously-allow-browser': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages: apiMessages
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || `HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (data.content && data.content[0]) {
-      return data.content[0].text;
-    }
-    throw new Error("Empty content returned from Claude API");
   };
 
   // Simulates typewriter streaming text output
@@ -429,7 +370,7 @@ Be concise (maximum 3-4 sentences).`;
     }, 25);
   };
 
-  const handleSendMessage = async (textToSend: string) => {
+  const handleSendMessage = (textToSend: string) => {
     if (!textToSend.trim() || isTyping) return;
 
     const userMessageText = textToSend.trim();
@@ -445,26 +386,11 @@ Be concise (maximum 3-4 sentences).`;
 
     setIsTyping(true);
 
-    if (isLiveAPI) {
-      try {
-        const responseText = await askClaudeAPI(userMessageText, messages);
-        // Extract any projects referenced in the text to display them as cards
-        const lowercaseResponse = responseText.toLowerCase();
-        const matched = PROJECTS_DATA.filter(p => lowercaseResponse.includes(p.name.toLowerCase()));
-        
-        simulateStreamingText(responseText, matched.length > 0 ? matched : undefined);
-      } catch (err) {
-        console.warn("Claude API failed, falling back to local NLP engine:", err);
-        const fallbackRes = getSimulatedResponse(userMessageText);
-        simulateStreamingText(`(API offline fallback) ${fallbackRes.text}`, fallbackRes.matchedProjects);
-      }
-    } else {
-      // Local NLP Simulation
-      const res = getSimulatedResponse(userMessageText);
-      setTimeout(() => {
-        simulateStreamingText(res.text, res.matchedProjects);
-      }, 350);
-    }
+    // Local NLP Simulation
+    const res = getSimulatedResponse(userMessageText);
+    setTimeout(() => {
+      simulateStreamingText(res.text, res.matchedProjects);
+    }, 350);
   };
 
   const handleCategoryClick = (category: Category) => {
@@ -495,12 +421,6 @@ Be concise (maximum 3-4 sentences).`;
     <section id="portfolio" className="py-24 border-t border-zinc-900 scroll-mt-24">
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
         <SectionHeading title="Projects" subtitle="Ask me about what I've built" />
-        
-        {/* Connection status indicator */}
-        <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-zinc-600 pb-4 md:pb-0">
-          <span className={`w-1.5 h-1.5 rounded-full ${isLiveAPI ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-800'}`}></span>
-          <span>Claude 3.5 Sonnet: {isLiveAPI ? 'Live API' : 'Simulated'}</span>
-        </div>
       </div>
 
       {/* Category Filter Pills */}
@@ -542,7 +462,7 @@ Be concise (maximum 3-4 sentences).`;
               >
                 {/* Sender Tag */}
                 <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-1.5 px-1">
-                  {isUser ? 'Visitor' : 'Claude'}
+                  {isUser ? 'Visitor' : 'Explorer'}
                 </span>
 
                 {/* Message Bubble */}
@@ -639,7 +559,7 @@ Be concise (maximum 3-4 sentences).`;
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               disabled={isTyping}
-              placeholder="Ask Claude about Syed's projects, tech stack, or MVPs..."
+              placeholder="Ask about Syed's projects, tech stack, or MVPs..."
               className="flex-1 bg-transparent text-xs text-zinc-100 placeholder:text-zinc-700 focus:outline-none px-2.5 py-2 disabled:opacity-50"
             />
             <button
